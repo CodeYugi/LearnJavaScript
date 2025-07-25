@@ -49,11 +49,9 @@ let firsttype = 1; // integer (whole number)
 let secondtype = 2.3; // Floats 
 // float have minor inaccuracy because computer store value in 0 and 1
 
-// Math.round()
-let round = Math.round(2.876);
-
+// Math.round() is use when we need to give value by doing round of 
+let round = Math.round(2.876); // round off 
 console.log(round);
-
 
 
 

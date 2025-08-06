@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+       <input type="text" id="username"  placeholder="username">
+       <input type="text" id="sty" class="yugi"  placeholder="forstyle" 
+       style="background-color: aqua; font-size: 30px;" >
+</body>
+<script>
+    let inputspace = document.getElementById("username");
+    console.log(inputspace.attributes);
+    console.log(inputspace.getAttribute("type"));
+    console.log(inputspace.getAttribute("id"));
+    console.log(inputspace.getAttribute("placeholder"));
+
+    inputspace.setAttribute("class" , "user");
+    console.log(inputspace);
+
+    console.log(inputspace.hasAttribute("class"));
+    console.log(inputspace.hasAttribute("height"));
+    console.log(inputspace.hasAttribute("id"));
+
+    inputspace.removeAttribute("class");
+  
+
+
+    let styy = document.getElementById("sty");
+    console.log(styy.style);
+    console.log(styy.style.fontSize);
+    console.log(styy.style.backgroundColor);
+    
+    styy.style.paddingLeft ="50px";
+    console.log(styy);
+    // styy.style.cssText ="height: 20px"; // remove existing style in html 
+    styy.style.cssText += "height: 20px; width: 100px"; //  add += now 
+    // console.log(styy);
+    
+    // console.log(window.getComputedStyle(styy));
+    // console.log(window.getComputedStyle(styy).height);
+
+
+</script>
+</html>

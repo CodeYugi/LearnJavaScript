@@ -76,3 +76,15 @@ console.log(sub1(5,2)); //output is 3
 
 const sub2 = (a,b) => a - b;
 console.log(sub2(5,2)); // output is 3 
+
+
+// another way to write function
+
+let summ = function sumi(){
+  console.log("you can enter logic here ");
+  return "done";
+};
+
+// how to call this ?
+
+console.log(summ());

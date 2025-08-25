@@ -137,7 +137,15 @@ console.log(globalVar);      // Accessible
 console.log(globalLet);      // Accessible
 console.log(globalConst);    // Accessible
 
+//lexical scope
 
-
-// two more scope module and Lexical
-// learn in master js repository 
+function outerfn(){
+  let a = 1;
+  let b = 2;
+  function innerfn(){
+    return console.log(a+b);
+  }
+  innerfn();
+  return "hi";
+}
+console.log(outerfn());

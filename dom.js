@@ -63,6 +63,9 @@ menu.insertBefore( newnode ,menu.firstElementChild)
 
 
 
+// querySelector so that we can select css only for single collector
+console.log(document.querySelector('h1'));
+
 
 
 

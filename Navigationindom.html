@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Navigation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; }
+      nav a { margin-right: 12px; }
+      .active { text-decoration: underline; font-weight: 600; }
+      .status { margin-top: 16px; font-size: 14px; color: #555; }
+      main { margin-top: 16px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+      code { background: #f6f6f6; padding: 2px 4px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <!--
+      NAVIGATION (anchor links):
+      - Internal "pages" use clean paths (/home, /about, /contact) that we handle client-side.
+      - There's also a hash link (#faq) to show hashchange vs popstate differences.
+      - We prevent default navigation for internal links and update history with pushState().
+    -->
+    <nav id="nav">
+      <a href="/home" data-link>Home</a>
+      <a href="/about" data-link>About</a>
+      <a href="/contact" data-link>Contact</a>
+      <a href="#faq">FAQ (hash)</a>
+    </nav>
+
+    <!--
+      MAIN VIEW:
+      - This is where we render "route" content without a full page reload.
+    -->
+    <main id="app" role="main" aria-live="polite"></main>
+
+    <!--
+      STATUS AREA:
+      - Shows when popstate/hashchange fire to understand event ordering and history behavior.
+    -->
+    <div class="status">
+      <div id="popstateStatus">popstate: waiting…</div>
+      <div id="hashStatus">hashchange: waiting…</div>
+      <div id="urlStatus">url: <code id="urlCode"></code></div>
+    </div>
+
+    <script>
+      // ---------------------------------------------
+      // Simple "routes" map: path -> function to render content
+      // In real apps, content might come from templates or fetch calls.
+      // ---------------------------------------------
+      const routes = {
+        "/": () => `<h2>Welcome</h2><p>This is the initial landing state set with replaceState so Back returns here properly.</p>`,
+        "/home": () => `<h2>Home</h2><p>This content is rendered without a full reload. Try Back/Forward.</p>`,
+        "/about": () => `<h2>About</h2><p>This updates both the DOM and the URL using history.pushState.</p>`,
+        "/contact": () => `<h2>Contact</h2><p>Form goes here. Navigation remains in the same document.</p>`,
+      };
+
+      // ---------------------------------------------
+      // Render helper: updates <main> and active link styles
+      // ---------------------------------------------
+      function render(pathname) {
+        const app = document.getElementById("app");
+        const view = routes[pathname] || (() => `<h2>Not found</h2><p>No route for: <code>${pathname}</code></p>`);
+        app.innerHTML = view();
+
+        // Update active nav link
+        document.querySelectorAll('nav a[data-link]').forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === pathname);
+        });
+
+        // Update URL display
+        document.getElementById("urlCode").textContent = location.href;
+      }
+
+      // ---------------------------------------------
+      // On first load:
+      // - Ensure the initial history entry has state via replaceState(),
+      //   so when Back returns to this entry, popstate carries a state object.
+      //   MDN recommends setting initial state for SPAs. [Working with History API]
+      // ---------------------------------------------
+      (function init() {
+        const initialState = {
+          name: "Home",
+          path: location.pathname === "/" ? "/" : location.pathname,
+          ts: Date.now()
+        };
+        // Attach state to the current entry so Back can restore it without reload. [MDN replaceState guidance]
+        history.replaceState(initialState, "", initialState.path);
+        render(initialState.path);
+      })(); // [2]
+
+      // ---------------------------------------------
+      // Link interception:
+      // - For internal links (data-link), prevent default navigation,
+      //   push a new history entry, then render the route.
+      // - preventDefault is the correct way to stop the browser following the link. [StackOverflow]
+      // ---------------------------------------------
+      document.addEventListener("click", (e) => {
+        // Use event delegation to also catch dynamically inserted links.
+        const anchor = e.target.closest('a');
+        if (!anchor) return;
+
+        const isInternal = anchor.matches('[data-link]');
+        if (isInternal) {
+          e.preventDefault(); // Stop normal navigation so we can SPA it. [7]
+
+          const url = anchor.getAttribute("href");
+          const state = { name: url.slice(1) || "Home", path: url, ts: Date.now() };
+
+          // pushState adds a new session history entry without reloading. [MDN pushState]
+          history.pushState(state, "", url); // [1]
+
+          // Now update the DOM to match the logical navigation.
+          render(url);
+          document.getElementById("popstateStatus").textContent = `popstate: waiting… (pushed ${state.path})`;
+        }
+      }); // [1][7]
+
+      // ---------------------------------------------
+      // Handle Back/Forward buttons:
+      // - popstate fires on history traversal (not on pushState itself).
+      // - event.state is the state object provided to pushState/replaceState. [MDN Working with History API]
+      // ---------------------------------------------
+      window.addEventListener("popstate", (event) => {
+        const state = event.state; // can be null if no state was set for this entry
+        if (state && state.path) {
+          render(state.path);
+          document.getElementById("popstateStatus").textContent = `popstate: restored ${state.path}`;
+        } else {
+          // If no state, fall back to location.pathname (e.g., direct loads or missing initial state)
+          render(location.pathname);
+          document.getElementById("popstateStatus").textContent = `popstate: no state, rendered ${location.pathname}`;
+        }
+        document.getElementById("urlCode").textContent = location.href;
+      }); // [2][1]
+
+      // ---------------------------------------------
+      // Hash navigation demo:
+      // - Clicking the FAQ link changes only the hash. This triggers hashchange.
+      // - Note: popstate and hashchange have distinct semantics; some flows fire both,
+      //   and ordering can matter (popstate can precede hashchange in some cases). [Codeguage]
+      // ---------------------------------------------
+      window.addEventListener("hashchange", () => {
+        // Demonstrate hash behavior alongside SPA routes
+        const app = document.getElementById("app");
+        if (location.hash === "#faq") {
+          app.insertAdjacentHTML("beforeend",
+            `<section id="faq" style="margin-top:12px">
+               <h3>FAQ (hash section)</h3>
+               <p>This section appeared due to a hash change, not a route change.</p>
+             </section>`
+          );
+        }
+        document.getElementById("hashStatus").textContent = `hashchange: now ${location.hash || "(none)"}`;
+        document.getElementById("urlCode").textContent = location.href;
+      }); // [9]
+
+      // ---------------------------------------------
+      // Notes (behavioral summary):
+      // - history.pushState(state, "", url) adds a new entry; the browser does NOT load the URL then. [MDN pushState]
+      // - history.replaceState(...) attaches state to the current entry so Back can restore initial UI. [Working with History API]
+      // - popstate fires on history traversal (Back/Forward) and carries event.state. [Working with History API]
+      // - hashchange fires when the fragment changes (#...), independent of pushState routes. [Codeguage]
+      // ---------------------------------------------
+    </script>
+  </body>
+</html>

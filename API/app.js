@@ -13,23 +13,23 @@
 
 //json.parse(data)
 // this method is use to convert the string to js object
-let respose1 = '{"fact":"Tabby cats are thought to get their name from Attab, a district in Baghdad, now the capital of Iraq.","length":100}';
-let validres1 = JSON.parse(respose1);
-console.log(validres1);
-console.log(validres1.fact);
-console.log(validres1.length);
+// let respose1 = '{"fact":"Tabby cats are thought to get their name from Attab, a district in Baghdad, now the capital of Iraq.","length":100}';
+// let validres1 = JSON.parse(respose1);
+// console.log(validres1);
+// console.log(validres1.fact);
+// console.log(validres1.length);
 
 
 //json.stringify
 // this method is use to convert the js object data  to json 
 
-let obj1 = {
-    name : "yugi",
-    rollno : 81,
-}
+// let obj1 = {
+//     name : "yugi",
+//     rollno : 81,
+// }
 
-let validres2 = JSON.stringify(obj1);
-console.log(validres2);
+// let validres2 = JSON.stringify(obj1);
+// console.log(validres2);
 
 
 // testing api request 
@@ -61,3 +61,73 @@ console.log(validres2);
 // and appid=YOUR_API_KEY is your access key. The API reads these query string values and returns the weather data you requested.
 
 //https header 
+// this is give additonal information in request as well as response 
+
+
+
+// using fetch 
+
+// let url = "https://catfact.ninja/fact";
+
+// fetch(url)
+// .then((response)=>{
+//   console.log(response);
+//    return response.json()
+// })
+// .then((data)=>{
+//   console.log(data.fact);
+//   return fetch(url);
+// })
+// .then((response)=>{
+//    return response.json()
+// })
+// .then((data2)=>{
+//   console.log(data2.fact);
+// })
+// .catch((error)=>{
+//     console.log("error" , error);
+// })
+
+
+// fetch using async await 
+
+// let url = "https://catfact.ninja/fact";
+
+// async function getfact() {
+//    try {
+//   let result  = await fetch(url);
+//   let data = await result.json();
+//   console.log(result);
+//   console.log(data);
+//   console.log(data.fact);
+//    } catch(error){
+//     console.log("error" , error); 
+//    }
+// }
+
+
+// axios
+// library to make https request 
+
+ let url = "https://catfact.ninja/fact";
+let factdata = "";
+
+async function getdata() {
+  try {
+    let result = await axios.get(url);
+    console.log(result.data.fact);
+    factdata = result.data.fact;
+    resultshow.innerText = factdata; 
+  } catch (error) {
+    console.log("error:- ", error);
+  }
+}
+
+let button = document.getElementById("btn");
+let resultshow = document.getElementById("result");
+
+
+button.addEventListener("click", () => {
+  getdata();
+});
+
